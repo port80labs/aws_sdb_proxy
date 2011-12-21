@@ -25,7 +25,7 @@ namespace :aws_sdb do
 
   desc "List all existing AWS SimpleDB Domains"
   task(:list_domains => :environment) do
-    require File.join(File.dirname(__FILE__),'..','lib','aws_sdb_proxy','server')
+    require File.join(File.dirname(__FILE__),'..','aws_sdb_proxy','server')
     puts "* #{AwsSdbProxy::SDB_SERVICE.list_domains.first.join("\n* ")}"
   end
 
