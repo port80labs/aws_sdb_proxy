@@ -10,16 +10,16 @@ require File.join(File.dirname(__FILE__),'sdb_servlet')
 #    SimpleDB web service.
 module AwsSdbProxy
 
-  CONFIG = YAML.load_file(File.join(RAILS_ROOT,'config','aws_sdb_proxy.yml'))[RAILS_ENV] rescue {}
+  CONFIG = YAML.load_file(File.join(Rails.root,'config','aws_sdb_proxy.yml'))[Rails.env] rescue {}
   # configuration via environment overrides config file
   CONFIG.merge!({
-    'aws_access_key_id'     => (ENV['AWS_ACCESS_KEY_ID'] || CONFIG['aws_access_key_id']),
-    'aws_secret_access_key' => (ENV['AWS_SECRET_KEY'] || CONFIG['aws_secret_access_key']),
-    'port'                  => (ENV['AWS_SDB_PROXY_PORT'] || CONFIG['port']),
-    'salt'                  => (ENV['AWS_SDB_PROXY_SALT'] || CONFIG['salt'])
+    :access_key_id     => (ENV['AWS_ACCESS_KEY_ID'] || CONFIG['aws_access_key_id']),
+    :secret_access_key => (ENV['AWS_SECRET_KEY'] || CONFIG['aws_secret_access_key']),
+    :port              => (ENV['AWS_SDB_PROXY_PORT'] || CONFIG['port']),
+    :salt              => (ENV['AWS_SDB_PROXY_SALT'] || CONFIG['salt'])
   })
 
-  if !CONFIG || [ CONFIG['aws_access_key_id'], CONFIG['aws_secret_access_key'] ].any?(&:blank?)
+  if !CONFIG || [ CONFIG[:access_key_id], CONFIG[:secret_access_key] ].any?(&:blank?)
     STDERR.puts "Please set your AWS credentials in aws_sdb_proxy.yml or via environment first!"
     exit 1
   end
@@ -60,14 +60,14 @@ module AwsSdbProxy
     protected
       # Configure the actual server and run it
       def self.run(options = {})
-        log_file = File.join(RAILS_ROOT,'log','aws_sdb_proxy_server.log')
+        log_file = File.join(Rails.root,'log','aws_sdb_proxy_server.log')
         server_options = { :Port => (CONFIG['port'] || 8888) }
         server_options[:Logger] = Logger.new(log_file) unless options[:debug]
         s = WEBrick::HTTPServer.new(server_options)
         s.logger.level = WEBrick::Log::DEBUG if options[:debug]
         s.mount('/', AwsSdbProxy::SdbServlet)
         trap('INT'){ s.shutdown }
-        pid_file = File.join(RAILS_ROOT,'tmp','pids','aws_sdb_proxy.pid')
+        pid_file = File.join(Rails.root,'tmp','pids','aws_sdb_proxy.pid')
         File.open(pid_file,'w') do |f|
           f.write(Process.pid)
         end
