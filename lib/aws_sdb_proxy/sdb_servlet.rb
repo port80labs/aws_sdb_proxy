@@ -1,5 +1,6 @@
 require 'aws_sdb'
 require 'digest/sha2'
+require 'builder'
 
 module AwsSdbProxy
 
@@ -87,6 +88,7 @@ module AwsSdbProxy
 
       # Split request URI into +domain+, +resource+, +id+ and +format+
       def parse_request_path(path_info)
+        logger.debug "Parse Path: #{path_info}"
         case path_info
         when /\A\/([^\/.?]+)\/([^\/.?]+)\Z/
           domain, resource, id, format = $1, $2, nil, nil
@@ -129,7 +131,7 @@ module AwsSdbProxy
       # Generate XML for element
       def to_xml(resource, attributes)
         document = ''
-        xml_builder = Builder::XmlMarkup.new(:target => document, :indent => 2)
+        xml_builder = ::Builder::XmlMarkup.new(:target => document, :indent => 2)
         xml_builder.instruct!
         to_xml_attributes(xml_builder, resource, attributes)
         document
@@ -138,7 +140,7 @@ module AwsSdbProxy
       # Generate XML for collection
       def to_xml_array(resource, items)
         document = ''
-        xml_builder = Builder::XmlMarkup.new(:target => document, :indent => 2)
+        xml_builder = ::Builder::XmlMarkup.new(:target => document, :indent => 2)
         xml_builder.instruct!
         xml_builder.tag!(resource, :type => :array) do |xml|
           items.each do |attributes|
